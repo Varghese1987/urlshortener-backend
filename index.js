@@ -76,7 +76,7 @@ app.post("/register", (req, res) => {
                                             to: 'varghese87es@gmail.com',
                                             subject: "Activate User Account",
                                             text: string,
-                                            html: `<a href='https://esv-urlshotener-frontend.netlify.app/activateuser/${string}'>Click her to Activate your Account</a>`
+                                            html: `<a href='https://esv-urlshotener-frontend.netlify.app/activateuser/#${string}'>Click her to Activate your Account</a>`
                                         };
                                         transporter.sendMail(mailOptions, (err, data) => {
                                             if (err) {
