@@ -64,7 +64,7 @@ app.post("/register", (req, res) => {
                                             port: 587,
                                             secure: false,
                                             auth: {
-                                                user: process.env.EMAIL,
+                                                user: 'varghese87joseph@gmail.com',
                                                 pass: process.env.PASSWORD
                                             },
                                             tls: {
