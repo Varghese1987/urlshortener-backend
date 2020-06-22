@@ -105,7 +105,7 @@ app.post("/login", (req, res) => {
         let db = client.db("ShortUrlApp");
         db.collection("users").findOne({ email: req.body.email }, (err, data) => {
             client.close();
-            if (err) throw err;
+            //if (err) throw err;
             // console.log(data)
             if (data) {
                 if (data.activate) {
@@ -133,7 +133,7 @@ app.post("/login", (req, res) => {
                 }
             } else {
                 res.status(401).json({
-                    "message": "Email doesnt exist",
+                    "message": "User doesnt exist pls register for accessing",
                 });
             }
         })
