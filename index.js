@@ -79,8 +79,8 @@ app.post("/register", (req, res) => {
                                             to: req.body.email,
                                             subject: "Activate User Account",
                                             text: string,
-                                            html: `<a href='https://esv-urlshotener-frontend.netlify.app/#/activateuser/${string}'>Click her to Activate your Account</a>`
-                                            //html: `<a href='http://localhost:4200/#/activateuser/${string}'>Click her to Activate your Account</a>`
+                                            //html: `<a href='https://esv-urlshotener-frontend.netlify.app/#/activateuser/${string}'>Click her to Activate your Account</a>`
+                                            html: `<a href='http://localhost:4200/#/activateuser/${string}'>Click her to Activate your Account</a>`
                                         };
                                         transporter.sendMail(mailOptions, (err, data) => {
                                             if (err) {
@@ -145,20 +145,22 @@ app.post("/login", (req, res) => {
 })
 
 app.post("/check-user", (req, res) => {
+    //console.log(req.body);
     mongoClient.connect(dbUrl, (err, client) => {
         if (err) throw err;
         let db = client.db("ShortUrlApp");
         db.collection("users").findOne({ email: req.body.email }, (err, data) => {
             if (err) throw err;
+            //console.log(data)
             if (data) {
                 let string = randomstring.generate();
                 db.collection("users").updateOne({ email: data.email }, { $set: { randomstring: string } }, { upsert: true }, (err, response) => {
-                    //console.log(data)
+                    
                     client.close();
                     if (err) throw err;
-                    if (respone) {
-                        res.status(200).send("success");
-                        console.log(data.email)
+                    if (response) {
+                        //res.status(200).send("success");
+                        
                         let transporter = nodemailer.createTransport({
                             host: "smtp.gmail.com",
                             port: 587,
@@ -176,7 +178,8 @@ app.post("/check-user", (req, res) => {
                             to: req.body.email,
                             subject: "Change Password",
                             text: string,
-                            html: `<a href='https://esv-urlshotener-frontend.netlify.app/#/resetpwd/${string}'>Click her to Rest password</a>`
+                            //html: `<a href='https://esv-urlshotener-frontend.netlify.app/#/resetpwd/${string}'>Click her to Rest password</a>`
+                            html: `<a href='http://localhost:4200/#/resetpwd/${string}'>Click her to Change your Account Password</a>`
                         };
                         transporter.sendMail(mailOptions, (err, data) => {
                             if (err) {
@@ -185,6 +188,9 @@ app.post("/check-user", (req, res) => {
                                 console.log('Email Sent:' + data.response);
                             }
 
+                        });
+                        res.status(200).json({
+                            "message": "success"
                         });
                     }
                 });
@@ -198,7 +204,7 @@ app.post("/check-user", (req, res) => {
 });
 
 app.put("/reset-password/:string", (req, res) => {
-    //console.log(req.params.string)
+    console.log(req.params.string)
     mongoClient.connect(dbUrl, (err, client) => {
         if (err) throw err;
         let db = client.db("ShortUrlApp");
