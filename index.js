@@ -59,6 +59,9 @@ app.post("/register", (req, res) => {
                                     if (err) throw err;
                                     if (response) {
                                         //res.status(200).send("success");
+                                        console.log(data)
+                                        console.log(response)
+                                        console.log(req.body.email)
                                         let transporter = nodemailer.createTransport({
                                             host: "smtp.gmail.com",
                                             port: 587,
@@ -73,10 +76,11 @@ app.post("/register", (req, res) => {
                                         });
                                         let mailOptions = {
                                             from: 'varghese87joseph@gmail.com',
-                                            to: data.email,
+                                            to: req.body.email,
                                             subject: "Activate User Account",
                                             text: string,
                                             html: `<a href='https://esv-urlshotener-frontend.netlify.app/#/activateuser/${string}'>Click her to Activate your Account</a>`
+                                            //html: `<a href='http://localhost:4200/#/activateuser/${string}'>Click her to Activate your Account</a>`
                                         };
                                         transporter.sendMail(mailOptions, (err, data) => {
                                             if (err) {
@@ -154,6 +158,7 @@ app.post("/check-user", (req, res) => {
                     if (err) throw err;
                     if (respone) {
                         res.status(200).send("success");
+                        console.log(data.email)
                         let transporter = nodemailer.createTransport({
                             host: "smtp.gmail.com",
                             port: 587,
@@ -168,7 +173,7 @@ app.post("/check-user", (req, res) => {
                         });
                         let mailOptions = {
                             from: 'varghese87joseph@gmail.com',
-                            to: data.email,
+                            to: req.body.email,
                             subject: "Change Password",
                             text: string,
                             html: `<a href='https://esv-urlshotener-frontend.netlify.app/#/resetpwd/${string}'>Click her to Rest password</a>`
