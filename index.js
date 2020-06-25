@@ -53,11 +53,11 @@ app.post("/register", (req, res) => {
                             if (data) {
                                 let string = randomstring.generate();
                                 //console.log(string)
-                                db.collection("users").updateOne({ email: req.body.email }, { $set: { randomstring: string, activate: false } }, { upsert: true }, (err, data) => {
+                                db.collection("users").updateOne({ email: req.body.email }, { $set: { randomstring: string, activate: false } }, { upsert: true }, (err, response) => {
                                     //console.log(data)
                                     client.close();
                                     if (err) throw err;
-                                    if (data) {
+                                    if (response) {
                                         //res.status(200).send("success");
                                         let transporter = nodemailer.createTransport({
                                             host: "smtp.gmail.com",
@@ -73,7 +73,7 @@ app.post("/register", (req, res) => {
                                         });
                                         let mailOptions = {
                                             from: 'varghese87joseph@gmail.com',
-                                            to: 'varghese87es@gmail.com',
+                                            to: data.email,
                                             subject: "Activate User Account",
                                             text: string,
                                             html: `<a href='https://esv-urlshotener-frontend.netlify.app/#/activateuser/${string}'>Click her to Activate your Account</a>`
@@ -148,11 +148,11 @@ app.post("/check-user", (req, res) => {
             if (err) throw err;
             if (data) {
                 let string = randomstring.generate();
-                db.collection("users").updateOne({ email: data.email }, { $set: { randomstring: string } }, { upsert: true }, (err, data) => {
+                db.collection("users").updateOne({ email: data.email }, { $set: { randomstring: string } }, { upsert: true }, (err, response) => {
                     //console.log(data)
                     client.close();
                     if (err) throw err;
-                    if (data) {
+                    if (respone) {
                         res.status(200).send("success");
                         let transporter = nodemailer.createTransport({
                             host: "smtp.gmail.com",
@@ -168,7 +168,7 @@ app.post("/check-user", (req, res) => {
                         });
                         let mailOptions = {
                             from: 'varghese87joseph@gmail.com',
-                            to: 'varghese87es@gmail.com',
+                            to: data.email,
                             subject: "Change Password",
                             text: string,
                             html: `<a href='https://esv-urlshotener-frontend.netlify.app/#/resetpwd/${string}'>Click her to Rest password</a>`
