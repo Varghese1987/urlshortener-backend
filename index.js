@@ -12,8 +12,16 @@ const unirest = require("unirest");
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
+
+//production URLs:
 const dbUrl = "mongodb+srv://varghese123:varghese123@cluster0-yqune.mongodb.net/<dbname>?retryWrites=true&w=majority"
-//const dbUrl = "mongodb://localhost:27017";
+const serverURL= "https://esv-shorturl.herokuapp.com";
+const frontEndURL = "https://esv-urlshotener-frontend.netlify.app/#/"; 
+
+// development URLs:
+// const dbUrl = "mongodb://localhost:27017"; 
+// const frontEndURL = "http://localhost:4200/#/"; 
+// const serverURL= "http://localhost:3000"; 
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -33,6 +41,66 @@ app.get("/urlList/:id", (req, res) => {
             })
     })
 });
+
+app.get("/chartData/:id", (req, res) => {
+    //let objId = mongodb.ObjectID(req.params.id)
+    mongoClient.connect(dbUrl, (err, client) => {
+        if (err) throw err;
+        let db = client.db("ShortUrlApp");
+        db.collection("shorturl").find({ userId: req.params.id }).toArray().then((data) => {
+            client.close();
+            let masterData = data.map(data => data.date);
+            let mapData = masterData.reduce(function(prev, cur) {
+                prev[cur] = (prev[cur] || 0) + 1;
+                return prev;
+            }, {});
+            let chartDates = Object.keys(mapData)
+            var curr = new Date; // get current date
+            var first = curr.getDate() - curr.getDay(); // First day is the day of the month - the day of the week
+            var last = first + 6; // last day is the first day + 6
+
+            var firstday = moment(new Date(curr.setDate(first)).toUTCString()).format("YYYY-MM-DD");
+            var lastday = moment(new Date(curr.setDate(last)).toUTCString()).format("YYYY-MM-DD");
+            var startDate = new Date(firstday); //YYYY-MM-DD
+            var endDate = new Date(lastday); //YYYY-MM-DD
+            
+            var getDateArray = function(start, end) {
+                var arr = new Array();
+                var dt = new Date(start);
+                while (dt <= end) {
+                    arr.push(moment(new Date(dt)).format("DD/MM/YYYY"));
+                    dt.setDate(dt.getDate() + 1);
+                }
+                return arr;
+            }
+            
+            var dateArr = getDateArray(startDate, endDate);
+            var hitCount = [];
+            dateArr.forEach((item)=>{
+        
+                if(mapData[item]){
+                hitCount.push(mapData[item])
+                }else{
+                  hitCount.push(0)
+                }
+              
+            })
+            //console.log(hitCount)
+            var result =  hitCount.reduce(function(result, field, index) {
+                result[dateArr[index]] = field;
+                return result;
+              }, {})       
+
+            res.status(200).json(result);
+
+        })
+            .catch((error) => {
+                //console.log(error);
+            })
+    })
+});
+
+
 
 app.post("/register", (req, res) => {
     mongoClient.connect(dbUrl, (err, client) => {
@@ -59,9 +127,9 @@ app.post("/register", (req, res) => {
                                     if (err) throw err;
                                     if (response) {
                                         //res.status(200).send("success");
-                                        console.log(data)
-                                        console.log(response)
-                                        console.log(req.body.email)
+                                        //console.log(data)
+                                        //console.log(response)
+                                        //console.log(req.body.email)
                                         let transporter = nodemailer.createTransport({
                                             host: "smtp.gmail.com",
                                             port: 587,
@@ -79,8 +147,7 @@ app.post("/register", (req, res) => {
                                             to: req.body.email,
                                             subject: "Activate User Account",
                                             text: string,
-                                            html: `<a href='https://esv-urlshotener-frontend.netlify.app/#/activateuser/${string}'>Click her to Activate your Account</a>`
-                                            //html: `<a href='http://localhost:4200/#/activateuser/${string}'>Click her to Activate your Account</a>`
+                                            html: `<a href='${frontEndURL}activateuser/${string}'>Click her to Activate your Account</a>`
                                         };
                                         transporter.sendMail(mailOptions, (err, data) => {
                                             if (err) {
@@ -178,8 +245,7 @@ app.post("/check-user", (req, res) => {
                             to: req.body.email,
                             subject: "Change Password",
                             text: string,
-                            html: `<a href='https://esv-urlshotener-frontend.netlify.app/#/resetpwd/${string}'>Click her to Rest password</a>`
-                            //html: `<a href='http://localhost:4200/#/resetpwd/${string}'>Click her to Change your Account Password</a>`
+                            html: `<a href='${frontEndURL}resetpwd/${string}'>Click her to Rest password</a>`
                         };
                         transporter.sendMail(mailOptions, (err, data) => {
                             if (err) {
@@ -204,7 +270,7 @@ app.post("/check-user", (req, res) => {
 });
 
 app.put("/reset-password/:string", (req, res) => {
-    console.log(req.params.string)
+    //console.log(req.params.string)
     mongoClient.connect(dbUrl, (err, client) => {
         if (err) throw err;
         let db = client.db("ShortUrlApp");
@@ -282,7 +348,7 @@ app.post("/shortUrl", (req, res) => {
             if (data) {
                 short = randomString(randomstring.generate(8));
                 //console.log(short);
-                db.collection("shorturl").updateOne({ longUrl: req.body.longUrl }, { $set: { shortUrl: `https://esv-shorturl.herokuapp.com/${short}`, hit: 0 } }, { upsert: true }, (err, data) => {
+                db.collection("shorturl").updateOne({ longUrl: req.body.longUrl }, { $set: { shortUrl: `${serverURL}/${short}`, hit: [] } }, { upsert: true }, (err, data) => {
                     if (err) throw err;
                     if (data) {
                         db.collection("shorturl").findOne({ longUrl: req.body.longUrl }, (err, data) => {
@@ -305,27 +371,43 @@ app.post("/shortUrl", (req, res) => {
 });
 
 app.get("/:string", (req, res) => {
-    mongoClient.connect(dbUrl, (err, client) => {
-        //let url = `http://localhost:3000/${req.params.string}`;
-        let url = `https://esv-shorturl.herokuapp.com/${req.params.string}`;
-        let db = client.db("ShortUrlApp");
-        db.collection("shorturl").findOne({ shortUrl: url }, (err, data) => {
-            if (err) throw err;
-            if (data) {
-                db.collection("shorturl").updateOne({ shortUrl: url }, { $set: { hit: data.hit + 1 } }, { upsert: true }, (err, response) => {
-                    client.close();
-                    if (err) throw err;
-                    if (response) {
-                        res.redirect(data.longUrl)
-                    }
-                })
-            } else {
-                res.status(401).json({
-                    "message": "URL that you have entered is not correct"
-                })
-            }
+    
+    const apiCall = unirest("GET", "https://extreme-ip-lookup.com/json/");
+    let detail = {};
+    apiCall.end(function (result) {
+        if (res.error) throw new Error(result.error);
+        // console.log(result.body);
+        // res.send(result.body);
+        let day = new Date();
+        detail = {
+            date: moment(day).format("DD/MM/YYYY"),
+            country:result.body.country,
+            city:result.body.city,
+            region:result.body.region
+        }
+        // res.send(detail);
+        mongoClient.connect(dbUrl, (err, client) => {
+            
+            let url = `${serverURL}/${req.params.string}`;
+            let db = client.db("ShortUrlApp");
+            db.collection("shorturl").findOne({ shortUrl: url }, (err, data) => {
+                if (err) throw err;
+                if (data) {
+                    db.collection("shorturl").updateOne({ shortUrl: url }, { $push: { hit: detail } }, (err, response) => {
+                        client.close();
+                        if (err) throw err;
+                        if (response) {
+                            res.redirect(data.longUrl)
+                        }
+                    })
+                } else {
+                    res.status(401).json({
+                        "message": "URL that you have entered is not correct"
+                    })
+                }
+            })
         })
-    })
+    });
 })
 
 
