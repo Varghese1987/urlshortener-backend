@@ -176,12 +176,9 @@ app.post("/login", (req, res) => {
         let db = client.db("ShortUrlApp");
         db.collection("users").findOne({ email: req.body.email }, (err, data) => {
             client.close();
-            //if (err) throw err;
-            // console.log(data)
             if (data) {
                 if (data.activate) {
                     bcrypt.compare(req.body.password, data.password, (err, result) => {
-                        // console.log(result)
                         if (result) {
                             jwt.sign({ userid: data._id }, "qwert", { expiresIn: '1h' }, (err, token) => {
 
@@ -212,7 +209,6 @@ app.post("/login", (req, res) => {
 })
 
 app.post("/check-user", (req, res) => {
-    //console.log(req.body);
     mongoClient.connect(dbUrl, (err, client) => {
         if (err) throw err;
         let db = client.db("ShortUrlApp");
