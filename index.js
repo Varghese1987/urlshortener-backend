@@ -16,7 +16,7 @@ dotenv.config();
 //production URLs:
 const dbUrl = "mongodb+srv://varghese123:varghese123@cluster0-yqune.mongodb.net/<dbname>?retryWrites=true&w=majority"
 const serverURL= "https://esv-shorturl.herokuapp.com";
-const frontEndURL = "https://esv-urlshotener-frontend.netlify.app/#/"; 
+const frontEndURL = "https://varghese-urlshotener.netlify.app/#/"; 
 
 // development URLs:
 // const dbUrl = "mongodb://localhost:27017"; 
