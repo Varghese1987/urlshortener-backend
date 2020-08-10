@@ -226,16 +226,17 @@ app.post("/check-user", (req, res) => {
                         //res.status(200).send("success");
                         
                         let transporter = nodemailer.createTransport({
-                            host: "smtp.gmail.com",
-                            port: 587,
-                            secure: false,
+                            // host: "smtp.gmail.com",
+                            // port: 587,
+                            // secure: false,
+                            service:'gmail',
                             auth: {
                                 user: 'varghese87joseph@gmail.com',
                                 pass: process.env.PASSWORD
                             },
-                            tls: {
-                                rejectUnauthorized: false
-                            }
+                            // tls: {
+                            //     rejectUnauthorized: false
+                            // }
                         });
                         let mailOptions = {
                             from: 'varghese87joseph@gmail.com',
